@@ -70,7 +70,8 @@ Start Health Check
 
 </div>
 
-<!-- SYMPTOM SCREEN -->
+
+<!-- SYMPTOM INPUT SCREEN -->
 
 <div id="input" class="screen">
 
@@ -80,7 +81,7 @@ Start Health Check
 Select Symptoms
 </h2>
 
-<div class="grid grid-cols-2 gap-3 mb-5">
+<div class="grid grid-cols-2 gap-3 mb-4">
 
 <button class="symptom bg-gray-700 p-3 rounded-lg"
 data-symptom="fever">Fever</button>
@@ -107,6 +108,24 @@ Breathing Difficulty
 
 </div>
 
+
+<!-- OTHER SYMPTOMS -->
+
+<input id="otherSymptoms"
+placeholder="Other symptoms (example: sore throat)"
+class="w-full p-3 rounded-lg text-black mb-4"/>
+
+
+<!-- VOICE BUTTON -->
+
+<button onclick="startVoice()"
+class="bg-purple-500 w-full py-2 rounded-lg mb-4">
+🎤 Speak Symptoms
+</button>
+
+
+<!-- ANALYZE -->
+
 <button onclick="predict()"
 class="bg-green-500 w-full py-3 rounded-xl">
 Analyze Risk
@@ -115,6 +134,7 @@ Analyze Risk
 </div>
 
 </div>
+
 
 <!-- RESULT SCREEN -->
 
@@ -155,6 +175,7 @@ Start Again
 
 </div>
 
+
 <!-- EXPLANATION SCREEN -->
 
 <div id="explain" class="screen">
@@ -179,10 +200,12 @@ Back to Home
 
 </div>
 
+
 <script>
 
 let selectedSymptoms=[]
 let explanationData=[]
+
 
 function showScreen(screen){
 
@@ -193,6 +216,8 @@ document.getElementById(screen)
 .classList.add("active")
 
 }
+
+
 
 document.querySelectorAll(".symptom").forEach(btn=>{
 
@@ -216,12 +241,23 @@ this.classList.add("selected")
 
 })
 
+
+
 async function predict(){
 
-if(selectedSymptoms.length===0){
+let other=document.getElementById("otherSymptoms").value
 
-alert("Please select symptoms")
+let otherList=[]
 
+if(other.trim()!==""){
+otherList=other.split(",").map(s=>s.trim())
+}
+
+let allSymptoms=[...selectedSymptoms,...otherList]
+
+if(allSymptoms.length===0){
+
+alert("Please select or enter symptoms")
 return
 
 }
@@ -235,7 +271,7 @@ headers:{
 },
 
 body:JSON.stringify({
-symptoms:selectedSymptoms
+symptoms:allSymptoms
 })
 
 })
@@ -251,6 +287,8 @@ explanationData=data.explanation
 showScreen("result")
 
 }
+
+
 
 function showExplanation(){
 
@@ -269,6 +307,29 @@ list.appendChild(li)
 })
 
 showScreen("explain")
+
+}
+
+
+
+function startVoice(){
+
+const SpeechRecognition =
+window.SpeechRecognition || window.webkitSpeechRecognition
+
+const recognition = new SpeechRecognition()
+
+recognition.lang = "en-US"
+
+recognition.start()
+
+recognition.onresult=function(event){
+
+let text = event.results[0][0].transcript
+
+document.getElementById("otherSymptoms").value = text
+
+}
 
 }
 
